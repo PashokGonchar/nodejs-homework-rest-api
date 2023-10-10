@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 
 const contactsPath = path.resolve(__dirname, 'contacts.json');
 const contactList = fs.readFileSync(contactsPath, 'utf-8');
@@ -48,7 +47,7 @@ const removeContact = (contactId, errorMessage) => {
 
 const addContact = (name, email, phone) => {
   contacts.push({
-    id: uuidv4(),
+    id: contacts.length+1,
     name: name,
     email: email,
     phone: phone,
@@ -67,7 +66,6 @@ const addContact = (name, email, phone) => {
 
 const updateContact = (contactId, name, email, phone, errorMessage) => {
   const contact = contacts.find((contact) => contact.id === contactId);
-  console.log('contact', contactId);
 
   if (!contact) {
     console.log(errorMessage);

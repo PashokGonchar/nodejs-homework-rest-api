@@ -10,9 +10,8 @@ router.post('/', contactsControllers.add);
 
 router.delete('/:contactId', contactsControllers.removeById);
 
-router.put(
-  '/:contactId',
-  contactsControllers.updateById
-);
+router.patch('/:contactId/favorite', contactsControllers.updateStatusById);
+
+router.put('/:contactId', contactsControllers.updateById);
 
 module.exports = router;

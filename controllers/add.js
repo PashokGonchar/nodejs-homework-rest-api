@@ -1,17 +1,8 @@
-const contacts = require("../models/contacts");
+const Contact = require("../models/contacts");
 
 const add = async (req, res, next) => {
-  const { name, email, phone } = req.body;
-
-  if (!name || !email || !phone) {
-    return res.status(400).json({
-      message: 'Missing required name field',
-    });
-  }
-
-  const updateContact = await contacts.addContact(name, email, phone);
-
-  res.status(201).json(updateContact);
+  const result = await Contact.create(req.body);
+  res.status(201).json(result);
 }
 
 module.exports = add;

@@ -1,18 +1,15 @@
-const contacts = require('../models/contacts');
+const Contact = require("../models/contacts");
 
 const removeById = async (req, res, next) => {
-  const contactId = req.params.contactId;
+  const { contactId } = req.params;
 
-  const newContacts = contacts.removeContact(
-    contactId,
-    `Contact not found!`
-  );
+  const result = await Contact.findByIdAndRemove(contactId);
 
-  if (!newContacts) {
-    return res.status(400).json({
-      message: `Contact not found!`,
-    });
-  }
+if (!result) {
+  return res.status(400).json({
+    message: `Contact not found!`,
+  });
+}
 
   res
     .status(200)

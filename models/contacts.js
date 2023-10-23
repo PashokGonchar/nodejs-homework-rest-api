@@ -1,98 +1,40 @@
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const Joi = require("joi");
+const { Schema, model } = require("mongoose")
 
-const contactsPath = path.resolve(__dirname, 'contacts.json');
-const contactList = fs.readFileSync(contactsPath, 'utf-8');
-const contacts = JSON.parse(contactList);
+const contactSchema = new Schema({
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { versionKey: false }
+);
 
-const listContacts = () => {
-  console.log('List of contacts: ');
-  console.table(contacts);
+const addSchema = Joi.object({
+  name: Joi.string().min(5).max(30).required(),
+  email: Joi.string()
+  .email({minDomainSegments: 2, tlds: {allow: ['com', 'net', 'ua']}})
+    .required(),
+  phone: Joi.string().min(8).max(15).required(),
+  favorite: Joi.boolean(),
+})
 
-  return contacts;
-};
+const updateFavoriteSchema = Joi.object({
+  favorite:Joi.boolean().required(),
+})
 
-const getContactById = (contactId, errorMessage) => {
-  const foundContact = contacts.find((contact) => contact.id === contactId);
+const schemas = {addSchema, updateFavoriteSchema}
 
-  if (!foundContact) {
-    throw new Error(errorMessage);
-  }
+const Contact = model("contact" , contactSchema)
 
-  console.log(`Get contact by ID=${contactId}`);
-  console.table(foundContact);
-
-  return foundContact;
-};
-
-const removeContact = (contactId, errorMessage) => {
-  const newContacts = contacts.filter((contact) => contact.id !== contactId);
-
-  if (newContacts.length === contacts.length) {
-    console.log(errorMessage);
-    return newContacts;
-  }
-
-  console.log('Contact deleted successfully! New list of contacts : ');
-  console.table(newContacts);
-
-  fs.writeFile(contactsPath, JSON.stringify(newContacts), (error) => {
-    if (error) {
-      return console.log('error :', error);
-    }
-  });
-
-  return newContacts;
-};
-
-const addContact = (name, email, phone) => {
-  contacts.push({
-    id: uuidv4(),
-    name: name,
-    email: email,
-    phone: phone,
-  });
-
-  console.log('Contacts added successfully! New list contacts : ');
-  console.table(contacts);
-
-  fs.writeFile(contactsPath, JSON.stringify(contacts), (error) => {
-    if (error) {
-      return console.log(error);
-    }
-  });
-  return contacts;
-};
-
-const updateContact = (contactId, name, email, phone, errorMessage) => {
-  const contact = contacts.find((contact) => contact.id === contactId);
-
-  if (!contact) {
-    console.log(errorMessage);
-    return;
-  }
-
-  contact.name = name;
-  contact.email = email;
-  contact.phone = phone;
-
-  console.log(`Contact with ID ${contactId} updated`);
-  console.table(contacts);
-
-  fs.writeFile(contactsPath, JSON.stringify(contacts), (error) => {
-    if (error) {
-      return console.log(error);
-    }
-  });
-
-  return contacts;
-};
-
-module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-};
+module.exports = {Contact, schemas}

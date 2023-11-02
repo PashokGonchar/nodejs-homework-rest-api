@@ -22,7 +22,9 @@ const registration = async (req, res) => {
   }
 
   const hashPassword = await bcryptjs.hash(password, 8);
-  const avatarURL = gravatar.url(email);
+
+  const avatarURL = gravatar.url(email, { protocol: 'http' });
+
   const newUser = await User.create({
     ...req.body,
     password: hashPassword,
@@ -61,24 +63,25 @@ const logIn = async (req, res) => {
 
 const logOut = async (req, res) => {
   const { _id } = req.user;
-  await User.findByIdAndUpdate(_id, { token: "" });
+  await User.findByIdAndUpdate(_id, { token: '' });
 
-  res.json({ message: "Logout success" });
+  res.json({ message: 'Logout success' });
 };
 
 const getCurrent = async (req, res) => {
-  const { email, subscription } = req.user;
-  res.json({ email, subscription });
+  const { email, subscription, avatarURL } = req.user;
+  res.json({ email, subscription, avatarURL });
 };
 
 const updateAvatar = async (req, res) => {
   const { _id } = req.user;
   const { path: tempUpload, originalname } = req.file;
   const filename = `${_id}_${originalname}`;
-  const resultUpload = path.join(avatarsDir, filename);
-  const img = await Jimp.read(`../../tmp/${originalname}`);
+  const img = await Jimp.read(tempUpload);
   img.resize(250, 250);
-  img.writeAsync(`../../tmp/${originalname}`);
+  img.writeAsync(tempUpload);
+
+  const resultUpload = path.join(avatarsDir, filename);
   await fs.rename(tempUpload, resultUpload);
   const avatarURL = path.join('avatars', filename);
   await User.findByIdAndUpdate(_id, { avatarURL });
